@@ -3,6 +3,10 @@
     {
       "source": "/api/(.*)",
       "destination": "https://backend-api-db-ds3m.onrender.com/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
