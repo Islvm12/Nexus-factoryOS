@@ -1,0 +1,172 @@
+/* src/styles/index.css
+  Nexus FactoryOS - Unified Design System (Light & Dark)
+*/
+@import "tailwindcss";
+/* @import url("https://fonts.googleapis.com");
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Space+Grotesk:wght@300;400;500;600&display=swap"); */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* =========================================
+     LIGHT MODE (DEFAULT)
+     ========================================= */
+  :root {
+    /* Backgrounds */
+    --bg0: #f4f7fc;
+    --bg1: #ffffff;
+    --bg2: #ffffff;
+    --bg3: #f8fafc;
+    --bg4: #e2e8f0;
+
+    /* Borders */
+    --border: #e2e8f0;
+    --border-bright: #cbd5e1;
+
+    /* Typography */
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+
+    /* Primary Accent (Blue) */
+    --blue: #3b82f6;
+    --blue-dim: #bfdbfe;
+    --blue-bg: #eff6ff;
+
+    /* Secondary Accents */
+    --teal: #10b981;
+    --teal-dim: #a7f3d0;
+    --teal-bg: #ecfdf5;
+
+    --coral: #f43f5e;
+    --coral-dim: #fecdd3;
+    --coral-bg: #fff1f2;
+
+    --purple: #8b5cf6;
+    --purple-dim: #ddd6fe;
+    --purple-bg: #f5f3ff;
+
+    --amber: #f59e0b;
+    --amber-dim: #fde68a;
+    --amber-bg: #fffbeb;
+
+    /* Sizing & Layout */
+    --sidebar: 220px;
+    --header: 52px;
+    --radius: 6px;
+    --radius-sm: 4px;
+
+    /* Fonts */
+    --font-mono: "IBM Plex Mono", monospace;
+    --font-ui: "Space Grotesk", sans-serif;
+  }
+
+  /* =========================================
+     DARK MODE (Overrides)
+     ========================================= */
+  .dark {
+    /* Backgrounds */
+    --bg0: #0a0b0d;
+    --bg1: #0f1115;
+    --bg2: #161820;
+    --bg3: #1e2028;
+    --bg4: #252830;
+
+    /* Borders */
+    --border: #2a2d38;
+    --border-bright: #3a3e4e;
+
+    /* Typography */
+    --text-primary: #e8eaf0;
+    --text-secondary: #8b8fa0;
+    --text-muted: #555a6a;
+
+    /* Primary Accent (Blue) */
+    --blue: #4b9eff;
+    --blue-dim: #1a3e70;
+    --blue-bg: #070f1a;
+
+    /* Secondary Accents */
+    --teal: #0dd9a3;
+    --teal-dim: #065c47;
+    --teal-bg: #031410;
+
+    --coral: #ff6b4a;
+    --coral-dim: #7a2e1c;
+    --coral-bg: #1a0c08;
+
+    --purple: #a78bfa;
+    --purple-dim: #4c1d95;
+    --purple-bg: #0d0a1a;
+
+    /* Amber preserved for edge-case warnings if needed */
+    --amber: #f59e0b;
+    --amber-dim: #7a5206;
+    --amber-bg: #1a1308;
+  }
+
+  /* =========================================
+     GLOBAL RESETS & BASE STYLES
+     ========================================= */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    background-color: var(--bg0);
+    color: var(--text-primary);
+    font-family: var(--font-ui);
+    min-height: 100vh;
+    overflow-x: hidden;
+    /* Smooth transition for theme switching */
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-bright);
+    border-radius: 2px;
+  }
+}
+
+@layer utilities {
+  /* =========================================
+     CUSTOM ANIMATIONS
+     ========================================= */
+  .animate-pulse-slow {
+    animation: pulse-slow 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse-slow {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
+  @keyframes blink {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.3;
+    }
+  }
+}
