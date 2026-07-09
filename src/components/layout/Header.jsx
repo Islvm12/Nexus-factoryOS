@@ -1,7 +1,7 @@
 // src/components/layout/Header.jsx
 // import React from "react";
 import { Bell, Sun, Moon } from "lucide-react";
-import logo from "../assets/logo.png";
+import logo from "../../assets/logo.png";
 import { useTheme } from "../../context/ThemeContext";
 import { useAuth } from "../../context/AuthContext"; // <-- Import AuthContext
 
