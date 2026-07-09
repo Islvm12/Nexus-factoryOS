@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://backend-api-db-ds3m.onrender.com/$1"
+    }
+  ]
+}
