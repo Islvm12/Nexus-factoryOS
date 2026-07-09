@@ -1,6 +1,7 @@
 // src/components/layout/Header.jsx
 // import React from "react";
 import { Bell, Sun, Moon } from "lucide-react";
+import logo from "../assets/logo.png";
 import { useTheme } from "../../context/ThemeContext";
 import { useAuth } from "../../context/AuthContext"; // <-- Import AuthContext
 
@@ -18,11 +19,7 @@ export default function Header() {
       {/* Left Side (Logo) */}
       <div>
         <div className="flex gap-4 items-center">
-          <img
-            src="/src/assets/logo.png"
-            className="w-7 h-7"
-            alt="Nexus Logo"
-          />
+          <img src={logo} className="w-7 h-7" alt="Nexus Logo" />
           <span
             style={{ fontFamily: "var(--font-mono)" }}
             className="text-[13px] font-semibold text-[var(--text-primary)] h-fit tracking-[0.08em]"
