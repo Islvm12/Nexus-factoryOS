@@ -20,33 +20,19 @@ export const InspectionProvider = ({ children }) => {
     }
 
     try {
-      const res = await fetch(
-        "/api/inspections/pending-review?page=1&size=100",
-        {
-          headers: {
-            "x-session-id": sessionId,
-            "Content-Type": "application/json",
-          },
+      const res = await fetch("/api/inspections/pending-review", {
+        headers: {
+          "x-session-id": sessionId,
+          "Content-Type": "application/json",
         },
-      );
+      });
 
       if (res.ok) {
         const data = await res.json();
+        console.log(data);
 
         // 2. Count the data accurately based on your API structure
-        let count = 0;
-        if (data && typeof data.total === "number") {
-          count = data.total;
-        } else if (data && typeof data.count === "number") {
-          count = data.count;
-        } else if (Array.isArray(data)) {
-          count = data.length;
-        } else if (data && Array.isArray(data.items)) {
-          count = data.items.length;
-        } else if (data && Array.isArray(data.data)) {
-          count = data.data.length;
-        }
-
+        let count = data.meta.total_count;
         setPendingCount(count);
       }
     } catch (error) {
@@ -59,7 +45,7 @@ export const InspectionProvider = ({ children }) => {
     fetchPendingCount();
 
     // Auto-refresh the count every 15 seconds
-    const interval = setInterval(fetchPendingCount, 15000);
+    const interval = setInterval(fetchPendingCount, 10000);
     return () => clearInterval(interval);
   }, [user?.session_id]);
 
