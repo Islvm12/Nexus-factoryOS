@@ -7,6 +7,8 @@ import { InspectionProvider } from "./context/InspectionContext"; // <-- 1. Impo
 import Header from "./components/layout/Header";
 import Sidebar from "./components/layout/Sidebar";
 import Dashboard from "./pages/Dashboard";
+import Diagnostics from "./pages/Diagnostics";
+import Analytics from "./pages/Analytics";
 import QualityLog from "./pages/QualityLog";
 import Login from "./pages/Login";
 import Settings from "./pages/Settings";
@@ -81,6 +83,26 @@ export default function App() {
                   <ProtectedRoute>
                     <MainLayout>
                       <Control />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/analytics"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <Analytics />
+                    </MainLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/diagnostics"
+                element={
+                  <ProtectedRoute>
+                    <MainLayout>
+                      <Diagnostics />
                     </MainLayout>
                   </ProtectedRoute>
                 }
