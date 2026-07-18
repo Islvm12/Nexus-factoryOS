@@ -3,35 +3,46 @@ import React, { useState, useEffect } from "react";
 import Button from "../components/ui/Button";
 import QualityCard from "../features/quality/QualityCard";
 import { useAuth } from "../context/AuthContext";
-import {
-  Search,
-  Database,
-  RefreshCw,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { Search, Database, RefreshCw } from "lucide-react";
+
+// Helper function to calculate relative "time ago"
+const getTimeAgo = (dateString) => {
+  if (!dateString) return "Unknown time";
+  const now = new Date();
+  const past = new Date(dateString);
+  const diffMs = now - past;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffMins < 1) return "Just now";
+  if (diffMins < 60) return `${diffMins} min ago`;
+  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+  return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+};
 
 export default function QualityLog() {
   const { user, logout } = useAuth();
 
   // --- TAB & PAGINATION STATE ---
-  const [mainTab, setMainTab] = useState("Pending"); // "Pending" or "Reviewed"
-  const [subTab, setSubTab] = useState("Good"); // "Good", "Defected", "Invalid"
+  const [mainTab, setMainTab] = useState("Pending");
+  const [subTab, setSubTab] = useState("Good");
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 12;
 
-  const [inspections, setInspections] = useState([]);
+  // Store ALL inspections fetched from the API
+  const [allInspections, setAllInspections] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [apiError, setApiError] = useState(null);
 
   const fetchInspections = async () => {
     setIsLoading(true);
     try {
-      // Determine which API endpoint to hit based on the active main tab
+      // API no longer supports page/size parameters, fetch all based on status
       const endpoint =
         mainTab === "Pending"
-          ? `/api/inspections/pending-review?page=${page}&size=${PAGE_SIZE}`
-          : `/api/inspections/reviewed?page=${page}&size=${PAGE_SIZE}&status_filter=${subTab}`;
+          ? `/api/inspections/pending-review`
+          : `/api/inspections/reviewed?status_filter=${subTab}`;
 
       const res = await fetch(endpoint, {
         headers: {
@@ -48,24 +59,23 @@ export default function QualityLog() {
         ? data
         : data.items || data.data || [];
 
-      // Filter out items without valid images locally just to keep the UI clean
-      const dataWithImages = dataArray.filter(
-        (item) =>
-          item.cv_image_url &&
-          item.cv_image_url !== "string" &&
-          item.cv_image_url.trim() !== "",
-      );
+      // Filter valid images and sort from NEWEST to OLDEST
+      const validAndSortedData = dataArray
+        .filter(
+          (item) =>
+            item.cv_image_url &&
+            item.cv_image_url !== "string" &&
+            item.cv_image_url.trim() !== "",
+        )
+        .sort((a, b) => new Date(b.inspected_at) - new Date(a.inspected_at));
 
-      const mappedData = dataWithImages.map((item) => {
-        // UI Status relies purely on the Tab structure or raw API status
+      const mappedData = validAndSortedData.map((item) => {
         const uiStatus =
           mainTab === "Pending" ? "Pending" : item.status || subTab;
-
         const displayId = `PRD-${String(item.inspection_id).padStart(5, "0")}`;
-        const timeString = new Date(item.inspected_at).toLocaleTimeString(
-          "en-GB",
-          { hour: "2-digit", minute: "2-digit", second: "2-digit" },
-        );
+
+        // Apply "Time Ago" formatting here
+        const timeString = getTimeAgo(item.inspected_at);
 
         const rawLabel = item.defect_type || item.status || "Unknown";
         const displayLabel =
@@ -85,7 +95,7 @@ export default function QualityLog() {
         };
       });
 
-      setInspections(mappedData);
+      setAllInspections(mappedData);
       setApiError(null);
     } catch (error) {
       console.error("Quality Log Fetch Failed:", error);
@@ -95,10 +105,17 @@ export default function QualityLog() {
     }
   };
 
-  // Re-fetch whenever a tab or page changes
+  // Re-fetch ONLY when tabs change (remove 'page' from dependencies)
   useEffect(() => {
     fetchInspections();
-  }, [mainTab, subTab, page, user?.session_id]);
+  }, [mainTab, subTab, user?.session_id]);
+
+  // --- CLIENT-SIDE PAGINATION LOGIC ---
+  const totalPages = Math.ceil(allInspections.length / PAGE_SIZE);
+  const currentInspections = allInspections.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE,
+  );
 
   return (
     <div className="animate-in fade-in duration-300 pb-10">
@@ -116,7 +133,7 @@ export default function QualityLog() {
           </h1>
           <p className="text-[12px] text-[var(--text-secondary)] font-medium">
             Viewing {mainTab} {mainTab === "Reviewed" ? `(${subTab})` : ""} ·
-            Page {page}
+            Page {page} of {totalPages || 1}
           </p>
         </div>
         <div className="flex gap-2">
@@ -167,7 +184,7 @@ export default function QualityLog() {
           </button>
         </div>
 
-        {/* NESTED SUB-TABS (Only shows if "Reviewed" is active) */}
+        {/* NESTED SUB-TABS */}
         {mainTab === "Reviewed" && (
           <div className="flex items-center gap-2 px-5 py-3 border-b border-[var(--border)] bg-[var(--bg2)]">
             {["Good", "Defected", "Invalid"].map((tab) => (
@@ -191,8 +208,8 @@ export default function QualityLog() {
 
         {/* GRID */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4 min-h-[400px] content-start">
-          {inspections.length > 0 ? (
-            inspections.map((item) => (
+          {currentInspections.length > 0 ? (
+            currentInspections.map((item) => (
               <QualityCard
                 key={item.id}
                 item={item}
@@ -205,36 +222,52 @@ export default function QualityLog() {
               <span className="text-[13px] italic">
                 No {mainTab.toLowerCase()}{" "}
                 {mainTab === "Reviewed" ? subTab.toLowerCase() : ""} records
-                found on this page.
+                found.
               </span>
             </div>
           )}
         </div>
 
-        {/* PAGINATION CONTROLS */}
-        <div className="flex items-center justify-between p-4 border-t border-[var(--border)] bg-[var(--bg1)]">
-          <Button
-            variant="default"
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={page === 1 || isLoading}
-            className="text-[12px]"
-          >
-            <ChevronLeft className="w-4 h-4 mr-1" /> Previous
-          </Button>
+        {/* NEW NUMBERED PAGINATION CONTROLS */}
+        {totalPages > 0 && (
+          <div className="flex items-center justify-center gap-3 p-5 border-t border-[var(--border)] bg-[var(--bg1)]">
+            {page > 1 && (
+              <button
+                onClick={() => setPage((p) => p - 1)}
+                className="text-[15px] font-medium text-[var(--blue)] hover:underline px-2"
+              >
+                Prev
+              </button>
+            )}
 
-          <span className="text-[12px] font-[var(--font-mono)] font-semibold text-[var(--text-secondary)]">
-            PAGE {page}
-          </span>
+            {/* Render page numbers up to a maximum of 10 for clean layout */}
+            {Array.from(
+              { length: Math.min(10, totalPages) },
+              (_, i) => i + 1,
+            ).map((num) => (
+              <button
+                key={num}
+                onClick={() => setPage(num)}
+                className={`text-[16px] px-1 font-semibold transition-colors ${
+                  page === num
+                    ? "text-[var(--coral)]"
+                    : "text-[var(--blue)] hover:text-[var(--blue-dim)] hover:underline"
+                }`}
+              >
+                {num}
+              </button>
+            ))}
 
-          <Button
-            variant="default"
-            onClick={() => setPage((p) => p + 1)}
-            disabled={inspections.length < PAGE_SIZE || isLoading}
-            className="text-[12px]"
-          >
-            Next <ChevronRight className="w-4 h-4 ml-1" />
-          </Button>
-        </div>
+            {page < totalPages && (
+              <button
+                onClick={() => setPage((p) => p + 1)}
+                className="text-[15px] font-medium text-[var(--blue)] hover:underline px-2"
+              >
+                Next
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
