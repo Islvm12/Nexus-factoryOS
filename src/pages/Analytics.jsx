@@ -159,13 +159,16 @@ export default function Analytics() {
       }
     });
 
-    // Convert object to array and calculate yield percentage
+    // Convert object to array and include raw unit counts alongside percentages
     const processedTrend = Object.values(grouped).map((item) => ({
       name: item.name,
       Yield: Number(((item.good / item.total) * 100).toFixed(1)),
       DefectRate: Number(
         (((item.total - item.good) / item.total) * 100).toFixed(1),
       ),
+      totalUnits: item.total,
+      goodUnits: item.good,
+      defectedUnits: item.total - item.good,
     }));
 
     setYieldTrend(processedTrend);
@@ -209,6 +212,40 @@ export default function Analytics() {
             Sample Count:{" "}
             <span className="font-mono text-[var(--text-primary)]">
               {data.sample_count}
+            </span>
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const YieldTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-[var(--bg2)] border border-[var(--border)] p-3 rounded-lg shadow-xl text-[12px] min-w-[160px]">
+          <p className="font-bold text-[var(--text-primary)] mb-2 border-b border-[var(--border)] pb-1">
+            {label}
+          </p>
+          <div className="flex flex-col gap-1.5 mb-2">
+            <p className="text-[var(--coral)] font-semibold flex justify-between gap-4">
+              <span>DefectRate: {data.DefectRate}%</span>
+              <span className="text-[var(--text-secondary)] font-normal">
+                ({data.defectedUnits} units)
+              </span>
+            </p>
+            <p className="text-[var(--teal)] font-semibold flex justify-between gap-4">
+              <span>Yield: {data.Yield}%</span>
+              <span className="text-[var(--text-secondary)] font-normal">
+                ({data.goodUnits} units)
+              </span>
+            </p>
+          </div>
+          <p className="text-[var(--text-secondary)] pt-1.5 border-t border-[var(--border)] flex justify-between">
+            Total Inspected:
+            <span className="font-mono font-semibold text-[var(--text-primary)]">
+              {data.totalUnits}
             </span>
           </p>
         </div>
@@ -283,14 +320,7 @@ export default function Analytics() {
                   tick={{ fill: "var(--text-secondary)" }}
                   domain={[0, 100]}
                 />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "var(--bg2)",
-                    borderColor: "var(--border)",
-                    borderRadius: "8px",
-                  }}
-                  itemStyle={{ fontSize: "13px", fontWeight: "bold" }}
-                />
+                <Tooltip content={<YieldTooltip />} />
                 <Legend />
                 <Line
                   type="monotone"
